@@ -1,20 +1,21 @@
 import streamlit as st
 from db_connection import Connect_DB
 from dashboard import Dashboard
+import plotly.express as px
+import pandas as pd
 
 class ClassManager:
     def __init__(self):
         self.dashboard = Dashboard()
     
     def run(self):
-        # Display header
-        logo, title, right = st.columns(3)
-        with logo:
-            # Using a placeholder SVG icon for the logo since we can't use the PNG
-            st.markdown("📚", unsafe_allow_html=True)
-        with title:
-            st.markdown("## Class Manager")
-        st.markdown("---")
+        # Display header with improved styling
+        st.markdown("""
+            <div style="text-align: center; padding: 1rem; background: linear-gradient(90deg, #4a90e2, #23d5ab); border-radius: 10px; margin-bottom: 2rem;">
+                <h1 style="color: white; margin: 0;">📚 Class Management System</h1>
+                <p style="color: white; margin: 0; opacity: 0.9;">Comprehensive student and results management</p>
+            </div>
+        """, unsafe_allow_html=True)
         
         # Sidebar navigation
         options = st.sidebar.selectbox("Navigation", [
@@ -266,9 +267,24 @@ class ClassManager:
                                 "Grade": grade
                             })
                         
-                        import pandas as pd
                         df = pd.DataFrame(summary_data)
                         st.dataframe(df, use_container_width=True)
+                        
+                        # Add performance charts after results generation
+                        st.markdown("---")
+                        st.markdown("### 📊 Performance Analytics")
+                        
+                        # Create tabs for different chart views
+                        chart_tab1, chart_tab2, chart_tab3 = st.tabs(["Individual Performance", "Grade Distribution", "Class Statistics"])
+                        
+                        with chart_tab1:
+                            self.create_individual_performance_chart(summary_data)
+                        
+                        with chart_tab2:
+                            self.create_grade_distribution_chart(summary_data)
+                        
+                        with chart_tab3:
+                            self.create_class_statistics_chart(summary_data, subject_name)
                         
                     except Exception as e:
                         st.error(f"Error saving results: {e}")
@@ -293,3 +309,107 @@ class ClassManager:
             return "C"
         else:
             return "F"
+    
+    def create_individual_performance_chart(self, summary_data):
+        """Create a bar chart showing individual student performance"""
+        if not summary_data:
+            st.info("No data available for individual performance chart.")
+            return
+            
+        students = [data["Name"] for data in summary_data]
+        percentages = [float(data["Percentage"].replace('%', '')) for data in summary_data]
+        
+        fig = px.bar(
+            x=students,
+            y=percentages,
+            title="Individual Student Performance",
+            labels={'x': 'Student', 'y': 'Percentage'},
+            color=percentages,
+            color_continuous_scale="Viridis"
+        )
+        
+        fig.update_layout(
+            template="plotly_white",
+            title_x=0.5,
+            xaxis_tickangle=-45,
+            height=400
+        )
+        
+        st.plotly_chart(fig, use_container_width=True)
+    
+    def create_grade_distribution_chart(self, summary_data):
+        """Create a pie chart showing grade distribution"""
+        if not summary_data:
+            st.info("No data available for grade distribution chart.")
+            return
+            
+        grades = [data["Grade"] for data in summary_data]
+        grade_counts = {}
+        
+        for grade in grades:
+            grade_counts[grade] = grade_counts.get(grade, 0) + 1
+        
+        fig = px.pie(
+            values=list(grade_counts.values()),
+            names=list(grade_counts.keys()),
+            title="Grade Distribution",
+            hole=0.4,
+            color_discrete_sequence=px.colors.qualitative.Pastel
+        )
+        
+        fig.update_layout(
+            template="plotly_white",
+            title_x=0.5,
+            height=400
+        )
+        
+        st.plotly_chart(fig, use_container_width=True)
+    
+    def create_class_statistics_chart(self, summary_data, subject_name):
+        """Create a line chart showing class statistics trend"""
+        if not summary_data:
+            st.info("No data available for class statistics.")
+            return
+            
+        percentages = [float(data["Percentage"].replace('%', '')) for data in summary_data]
+        
+        # Calculate statistics
+        avg_percentage = sum(percentages) / len(percentages)
+        max_percentage = max(percentages)
+        min_percentage = min(percentages)
+        
+        # Display metrics
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Average Score", f"{avg_percentage:.1f}%")
+        with col2:
+            st.metric("Highest Score", f"{max_percentage:.1f}%")
+        with col3:
+            st.metric("Lowest Score", f"{min_percentage:.1f}%")
+        with col4:
+            st.metric("Total Students", len(summary_data))
+        
+        # Create a trend line showing performance distribution
+        sorted_percentages = sorted(percentages, reverse=True)
+        student_ranks = list(range(1, len(sorted_percentages) + 1))
+        
+        fig = px.line(
+            x=student_ranks,
+            y=sorted_percentages,
+            title=f"Performance Trend for {subject_name}",
+            labels={'x': 'Student Rank', 'y': 'Percentage'},
+            markers=True
+        )
+        
+        fig.update_traces(
+            line=dict(width=3),
+            marker=dict(size=8)
+        )
+        
+        fig.update_layout(
+            template="plotly_white",
+            title_x=0.5,
+            height=400
+        )
+        
+        st.plotly_chart(fig, use_container_width=True)

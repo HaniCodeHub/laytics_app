@@ -101,6 +101,10 @@ The application is designed for cloud deployment with environment variable confi
 ```
 Changelog:
 - July 01, 2025. Initial setup
+- July 01, 2025. Database migration from MySQL to PostgreSQL completed
+- July 01, 2025. Enhanced dashboard with tabbed analytics (Class Distribution, Performance Overview, Enrollment Trends)
+- July 01, 2025. Added performance charts to results generation with tabs for Individual Performance, Grade Distribution, and Class Statistics
+- July 01, 2025. Improved UI styling with gradient headers and modern chart designs using Plotly
 ```
 
 ## User Preferences
