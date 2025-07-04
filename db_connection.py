@@ -5,23 +5,27 @@ import streamlit as st
 
 class Connect_DB:
     @staticmethod
+    
     def get_connection():
         """
-        Creates and returns a PostgreSQL database connection using environment variables
+        Creates and returns a PostgreSQL database connection using Streamlit secrets
         """
         try:
-            database_url = st.secrets("DATABASE_URL")
+            database_url = st.secrets["DATABASE_URL"]
 
             connection = psycopg2.connect(
                 database_url,
                 cursor_factory=RealDictCursor
             )
-
-
             return connection
+
+        except KeyError:
+            st.error("DATABASE_URL is not set in Streamlit secrets. Go to Settings → Secrets and add it.")
+            return None
         except psycopg2.Error as e:
             st.error(f"Database connection error: {e}")
             return None
+
 
     @staticmethod
     def create_tables():
