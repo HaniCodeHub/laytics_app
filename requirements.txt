@@ -1,4 +1,3 @@
-python
 streamlit
 psycopg2-binary
 plotly
