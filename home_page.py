@@ -17,26 +17,40 @@ class ClassManagerApp:
         self.load_custom_css()
 
     def load_custom_css(self):
-        st.markdown(
-            """
+        st.markdown("""
             <style>
+            /* Dark Theme Implementation */
             .stApp {
-                background: var(--background-color);
-                color: var(--text-color);
+                background: linear-gradient(135deg, #0d1117 0%, #161b22 100%) !important;
+                color: #f0f6fc !important;
             }
 
+            /* Override all Streamlit default backgrounds */
+            .main .block-container {
+                background: transparent !important;
+                padding-top: 1rem !important;
+            }
+
+            /* Sidebar styling for dark theme */
+            .css-1d391kg, .css-1rs6os, .css-17eq0hr {
+                background: linear-gradient(180deg, #161b22 0%, #0d1117 100%) !important;
+                border-right: 1px solid #30363d !important;
+            }
+
+            /* Navigation styling */
             .top-nav {
                 backdrop-filter: blur(10px);
-                background: rgba(255, 255, 255, 0.8) !important;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                background: rgba(13, 17, 23, 0.9) !important;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.3);
                 padding: 1rem 2rem;
                 position: sticky;
                 top: 0;
                 z-index: 1000;
+                border-bottom: 1px solid #30363d;
             }
 
             .logo {
-                color: #4a90e2;
+                color: #58a6ff !important;
                 text-decoration: none;
                 transition: transform 0.3s ease;
                 cursor: pointer;
@@ -44,52 +58,47 @@ class ClassManagerApp:
 
             .logo:hover {
                 transform: scale(1.05);
+                color: #79c0ff !important;
             }
 
             .nav-link {
                 text-decoration: none !important;
-                color: #333;
+                color: #f0f6fc !important;
                 padding: 0.5rem 1rem;
-                border-radius: 5px;
+                border-radius: 8px;
                 transition: all 0.3s ease;
                 cursor: pointer;
-            }
-
-            .nav-link:hover {
-                background: rgba(74, 144, 226, 0.1);
-                color: #4a90e2;
-            }
-
-            .nav-buttons button {
-                background-color: #4a90e2 !important;
-                color: white !important;
-                padding: 0.75rem !important;
-                border-radius: 5px !important;
-                font-weight: 500 !important;
-                margin: 0 0.5rem !important;
-                border: none !important;
-                box-shadow: none !important;
-            }
-
-            .nav-buttons button:hover,
-            .button-style:hover {
-                transform: translateY(-2px) !important;
-                box-shadow: 0 4px 8px rgba(74, 144, 226, 0.2) !important;
-            }
-            
-            .button-style {
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
                 display: inline-block;
             }
 
+            .nav-link:hover {
+                background: rgba(88, 166, 255, 0.15) !important;
+                color: #58a6ff !important;
+            }
+
+            /* Use default Streamlit button styling - minimal overrides */
+            .stButton > button[kind="primary"] {
+                /* Let Streamlit handle primary button styling */
+            }
+
+            .stButton > button[kind="secondary"] {
+                /* Let Streamlit handle secondary button styling */
+            }
+
+            .section {
+                scroll-margin-top: 80px;
+                padding: 40px 0;
+            }
+
+            /* Dark hero section */
             .hero-container {
-                background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+                background: linear-gradient(-45deg, #7c3aed, #2563eb, #059669, #dc2626);
                 background-size: 400% 400%;
                 animation: gradient 15s ease infinite;
                 border-radius: 20px;
                 padding: 4rem 2rem;
-                margin: 2rem 0;
-                text-align: center;
+                border: 1px solid #30363d;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.3);
             }
 
             @keyframes gradient {
@@ -98,23 +107,31 @@ class ClassManagerApp:
                 100% { background-position: 0% 50%; }
             }
 
+            /* Dark feature cards */
             .feature-card {
-                background: white !important;
+                background: linear-gradient(135deg, #21262d 0%, #161b22 100%) !important;
+                border: 1px solid #30363d !important;
                 border-radius: 15px !important;
                 padding: 2rem;
                 transition: transform 0.3s ease, box-shadow 0.3s ease;
-                border: none !important;
                 min-height: 300px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 text-align: center;
                 margin-bottom: 0 !important;
+                color: #f0f6fc !important;
             }
 
             .feature-card:hover {
                 transform: translateY(-10px);
-                box-shadow: 0 0 20px rgba(74, 144, 226, 0.3) !important;
+                box-shadow: 0 15px 30px rgba(0,0,0,0.4) !important;
+                border-color: #58a6ff !important;
+            }
+
+            .feature-card h3 {
+                color: #58a6ff !important;
+                margin: 1rem 0 !important;
             }
 
             .feature-icon {
@@ -122,19 +139,78 @@ class ClassManagerApp:
                 height: 80px;
                 object-fit: contain;
                 margin: 1rem 0;
-                filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
+                filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3)) brightness(0.9) contrast(1.1);
             }
 
+            /* Chart containers */
             .chart-container {
-                background: white;
+                background: linear-gradient(135deg, #21262d 0%, #161b22 100%);
+                border: 1px solid #30363d;
                 border-radius: 15px;
                 padding: 2rem;
                 margin: 1rem 0;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             }
 
-            .stException, .stError {
-                display: none !important;
+            /* Streamlit specific dark theme overrides */
+            .stMarkdown, .stText {
+                color: #f0f6fc !important;
+            }
+
+            .stSelectbox > div > div {
+                background-color: #21262d !important;
+                border: 1px solid #30363d !important;
+                color: #f0f6fc !important;
+            }
+
+            .stTextInput > div > div > input {
+                background-color: #21262d !important;
+                border: 1px solid #30363d !important;
+                color: #f0f6fc !important;
+            }
+
+            .stTextArea > div > div > textarea {
+                background-color: #21262d !important;
+                border: 1px solid #30363d !important;
+                color: #f0f6fc !important;
+            }
+
+            # /* Tabs styling */
+            # .stTabs [data-baseweb="tab-list"] {
+            #     background: linear-gradient(135deg, #21262d 0%, #161b22 100%) !important;
+            #     border-radius: 10px !important;
+            #     border: 1px solid #30363d !important;
+            # }
+
+            # .stTabs [data-baseweb="tab"] {
+            #     background: transparent !important;
+            #     color: #8b949e !important;
+            #     border-radius: 8px !important;
+            #     padding: 10px 20px !important;
+            #     margin: 4px !important;
+            # }
+
+            # .stTabs [aria-selected="true"] {
+            #     background: linear-gradient(135deg, #58a6ff 0%, #79c0ff 100%) !important;
+            #     color: #0d1117 !important;
+            # }
+
+            /* Metrics styling */
+            [data-testid="metric-container"] {
+                background: linear-gradient(135deg, #21262d 0%, #161b22 100%) !important;
+                border: 1px solid #30363d !important;
+                border-radius: 10px !important;
+                padding: 1rem !important;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+            }
+
+            [data-testid="metric-container"] > div {
+                color: #f0f6fc !important;
+            }
+
+            /* Plotly charts dark theme */
+            .js-plotly-plot {
+                background: transparent !important;
             }
             </style>
             """,
@@ -142,46 +218,35 @@ class ClassManagerApp:
         )
 
     def display_navigation(self):
-        st.markdown(
-            """
-            <div class="top-nav">
-                <div style="display: flex; align-items: center; justify-content: space-between;">
+        col1, col2, col3 = st.columns([4, 0.001, 1])
+
+        with col1:
+            st.markdown(
+                """
+                <div class="top-nav">
                     <div style="display: flex; align-items: center; gap: 2rem;">
-                        <div class="logo">
-                            <h2 style="margin:0;">📊 Class Manager</h2>
-                        </div>
+                        <h2 class="logo" style="margin:0;">Laytics</h2>
                         <div style="display: flex; gap: 1.5rem;">
                             <a href="#features" class="nav-link">Features</a>
                             <a href="#analytics" class="nav-link">Analytics</a>
                         </div>
                     </div>
                 </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-        
-        # Navigation buttons
-        col1, col2, col3 = st.columns([1, 1, 1])
-        with col2:
-            subcol1, subcol2 = st.columns(2)
-            with subcol1:
-                if st.button("Login", use_container_width=True):
-                    st.session_state.show_login_form = True
-                    st.session_state.current_tab = "login"
-                    st.rerun()
-            with subcol2:
-                if st.button("Sign Up", use_container_width=True):
-                    st.session_state.show_login_form = True
-                    st.session_state.current_tab = "signup"
-                    st.rerun()
-        
-        # Message below navigation bar
-        st.markdown("""
-            <div style="text-align: center; margin-top: 1rem; padding: 0.5rem; background-color: #f8f9fa; border-radius: 5px; font-size: 18px;">
-                Transforming education through data analytics. Our platform helps educators gain insights into student performance.
-            </div>
-        """, unsafe_allow_html=True)
+                """,
+                unsafe_allow_html=True
+            )
+
+        with col3:
+            if st.button("Login", key="nav_login", use_container_width=True):
+                st.session_state.show_login_form = True
+                st.session_state.show_signup = False
+                st.rerun()
+            if st.button("Sign Up", key="nav_signup", use_container_width=True, type="primary"):
+                st.session_state.show_signup = True
+                st.session_state.show_login_form = False
+                st.rerun()
+
+        st.markdown("<h2 style='text-align: center;'>🎓 Welcome to edu anaytics</h2>", unsafe_allow_html=True)
 
     def display_hero(self):
         st.markdown(
@@ -255,10 +320,10 @@ class ClassManagerApp:
 
     def create_line_chart(self):
         data = pd.DataFrame({
-            "Week": [f"Week {i}" for i in range(1, 11)],
+            "Students": [f"Student {i}" for i in range(1, 11)],
             "Average Score": np.random.randint(60, 90, 10)
         })
-        fig = px.line(data, x="Week", y="Average Score",
+        fig = px.line(data, x="Students", y="Average Score",
                      title="Class Performance Trend",
                      template="plotly_white",
                      markers=True)
@@ -298,8 +363,8 @@ class ClassManagerApp:
                 st.session_state.current_tab = params["current_tab"]
         
         if st.session_state.get("is_logged_in", False):
-            st.markdown(f"<h2 style='text-align: center;'>🎉 Welcome, {st.session_state.get('identifier', 'User')}! 🎉</h2>", unsafe_allow_html=True)
-            st.write("You have successfully logged in. 🚀")
+            st.markdown(f"<h2 style='text-align: center;'>Welcome, {st.session_state.get('identifier', 'User')}! </h2>", unsafe_allow_html=True)
+            st.write("You have successfully logged in. ")
 
             if st.button("Logout"):
                 for key in ['is_logged_in', 'show_login_form', 'identifier', 'current_tab']:

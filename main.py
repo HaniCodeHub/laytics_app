@@ -6,7 +6,7 @@ from class_manager import ClassManager
 
 # Set page configuration at the very beginning
 st.set_page_config(
-    page_title="Class Manager",
+    page_title="Educational Analytics",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="collapsed"

@@ -10,15 +10,17 @@ class Connect_DB:
         Creates and returns a PostgreSQL database connection using environment variables
         """
         try:
-            # Use environment variables for database configuration
+            database_url = os.getenv("DATABASE_URL")
+            if not database_url:
+                st.error("DATABASE_URL is not set. Please add it to your environment or Streamlit secrets.")
+                return None
+
             connection = psycopg2.connect(
-                host=os.getenv("PGHOST", "localhost"),
-                database=os.getenv("PGDATABASE", "class_manager"),
-                user=os.getenv("PGUSER", "postgres"),
-                password=os.getenv("PGPASSWORD", ""),
-                port=os.getenv("PGPORT", "5432"),
+                database_url,
                 cursor_factory=RealDictCursor
             )
+
+
             return connection
         except psycopg2.Error as e:
             st.error(f"Database connection error: {e}")
@@ -27,7 +29,7 @@ class Connect_DB:
     @staticmethod
     def create_tables():
         """
-        Creates all necessary tables for the application
+        Creates all necessary tables for the application with proper user associations
         """
         connection = Connect_DB.get_connection()
         if not connection:
@@ -47,27 +49,31 @@ class Connect_DB:
                 );
             """)
             
-            # Create classes table
+            # Create classes table with user association
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS classes (
                     id SERIAL PRIMARY KEY,
                     class_name VARCHAR(100) NOT NULL,
                     semester VARCHAR(50) NOT NULL,
                     total_students INTEGER DEFAULT 0,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    user_id INTEGER NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
                 );
             """)
             
-            # Create students table
+            # Create students table with user association
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS students (
                     id SERIAL PRIMARY KEY,
                     class_id INTEGER,
                     roll_no VARCHAR(20) NOT NULL,
                     name VARCHAR(100) NOT NULL,
+                    user_id INTEGER NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE(class_id, roll_no),
-                    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
+                    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
                 );
             """)
             
@@ -86,6 +92,11 @@ class Connect_DB:
                     CHECK (marks >= 0)
                 );
             """)
+            
+            # Create indexes for better performance
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_classes_user_id ON classes(user_id)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_students_user_id ON students(user_id)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_students_class_id ON students(class_id)")
             
             connection.commit()
             cursor.close()

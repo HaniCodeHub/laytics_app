@@ -12,27 +12,47 @@ class ClassManager:
         # Display header with improved styling
         st.markdown("""
             <div style="text-align: center; padding: 1rem; background: linear-gradient(90deg, #4a90e2, #23d5ab); border-radius: 10px; margin-bottom: 2rem;">
-                <h1 style="color: white; margin: 0;">📚 Class Management System</h1>
-                <p style="color: white; margin: 0; opacity: 0.9;">Comprehensive student and results management</p>
+                <h1 style="color: white; margin: 0;">Lytics – Class Management & Analytics</h1>
+                <p style="color: white; margin: 0; opacity: 0.9;">Comprehensive student and results insights</p>
             </div>
         """, unsafe_allow_html=True)
         
+
+        # Add Logout button at top of sidebar
+        if st.sidebar.button("Logout"):
+            # Clear all session state variables
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.session_state.is_logged_in = False
+            st.session_state.current_tab = "login"  # So login tab shows
+            st.success("You have been logged out.")
+            st.rerun()
+
+
         # Sidebar navigation
-        options = st.sidebar.selectbox("Navigation", [
-            "🏠 Home Dashboard", 
-            "📚 Add New Class", 
-            "📊 Results & Class Management"
-        ])
+        # Remember the last selected page
+
         
-        if options == "🏠 Home Dashboard":
+        valid_tabs = ["Home Dashboard", "Add New Class", "Results & Class Management"]
+        if "current_tab" not in st.session_state or st.session_state.current_tab not in valid_tabs:
+            st.session_state.current_tab = "Home Dashboard"  # Reset to valid default
+
+        # Sidebar navigation
+        options = st.sidebar.selectbox("Navigation", valid_tabs, index=valid_tabs.index(st.session_state.current_tab))
+
+        # Save current selection to session
+        st.session_state.current_tab = options
+
+        
+        if options == "Home Dashboard":
             self.dashboard.display_dashboard()
-        elif options == "📚 Add New Class":
+        elif options == "Add New Class":
             self.display_add_class()
-        elif options == "📊 Results & Class Management":
+        elif options == "Results & Class Management":
             self.display_results_management()
     
     def display_add_class(self):
-        st.subheader("Add a New Class and Students")
+        st.subheader("Create Class & add Students")
         
         # Initialize session state for students list if not already done
         if "students" not in st.session_state:
@@ -62,17 +82,18 @@ class ClassManager:
                 
                 # Insert class
                 cursor.execute(
-                    "INSERT INTO classes (class_name, semester, total_students) VALUES (%s, %s, %s) RETURNING id",
-                    (class_name, semester, len([s for s in students if s["roll_no"] and s["name"]]))
+                    "INSERT INTO classes (class_name, semester, total_students, user_id) VALUES (%s, %s, %s, %s) RETURNING id",
+                    (class_name, semester, len([s for s in students if s["roll_no"] and s["name"]]), st.session_state.user_id)
                 )
+
                 class_id = cursor.fetchone()['id']
 
                 # Insert students
                 for student in students:
                     if student["roll_no"] and student["name"]:
                         cursor.execute(
-                            "INSERT INTO students (class_id, roll_no, name) VALUES (%s, %s, %s)",
-                            (class_id, student["roll_no"], student["name"])
+                            "INSERT INTO students (class_id, roll_no, name, user_id) VALUES (%s, %s, %s, %s)",
+                            (class_id, student["roll_no"], student["name"], st.session_state.user_id)
                         )
                 connection.commit()
                 cursor.close()
@@ -116,8 +137,8 @@ class ClassManager:
             create_class(class_name, semester, students)
 
     def display_results_management(self):
-        st.subheader("Generate Results for a Class")
-        st.write("View available classes, manage their details, and generate results for any subject quickly.")
+        # st.subheader("Generate Results for your Class")
+        # st.write("View available classes, manage their details, and generate results for any subject.")
 
         # Function to reset session state and go back to the main page
         def reset_class_page():
@@ -144,7 +165,10 @@ class ClassManager:
                 return
                 
             cursor = connection.cursor()
-            cursor.execute("SELECT id, class_name, semester, total_students FROM classes")
+            cursor.execute(
+                "SELECT id, class_name, semester, total_students FROM classes WHERE user_id = %s",
+                (st.session_state.user_id,)
+            )
             classes = cursor.fetchall()
             cursor.close()
             connection.close()
@@ -196,18 +220,22 @@ class ClassManager:
             return
             
         cursor = connection.cursor()
-        cursor.execute("SELECT * FROM classes WHERE id = %s", (selected_class_id,))
+        cursor.execute("SELECT * FROM classes WHERE id = %s AND user_id = %s", 
+               (selected_class_id, st.session_state.user_id))
         cls = cursor.fetchone()
 
+        st.markdown("---")
         st.title(f"Class: {cls['class_name']} - Semester {cls['semester']}")
         st.write(f"Total Students: {cls['total_students']}")
-
-        st.subheader("Generate Subject Result")
+        st.markdown("---")
+        st.subheader("Subject Result")
+        
         subject_name = st.text_input("Subject Name")
         total_marks = st.number_input("Total Marks", min_value=0, step=1)
 
         # Fetch students for the selected class
-        cursor.execute("SELECT id, roll_no, name FROM students WHERE class_id = %s", (selected_class_id,))
+        cursor.execute("SELECT id, roll_no, name FROM students WHERE class_id = %s AND user_id = %s",
+               (selected_class_id, st.session_state.user_id))
         students = cursor.fetchall()
 
         if not students:
@@ -254,6 +282,7 @@ class ClassManager:
                         st.success("Results saved successfully!")
                         
                         # Display results summary
+                        st.markdown("---")
                         st.subheader("Results Summary")
                         summary_data = []
                         for i, student in enumerate(students):
@@ -272,7 +301,7 @@ class ClassManager:
                         
                         # Add performance charts after results generation
                         st.markdown("---")
-                        st.markdown("### 📊 Performance Analytics")
+                        st.markdown("### Performance Analytics")
                         
                         # Create tabs for different chart views
                         chart_tab1, chart_tab2, chart_tab3 = st.tabs(["Individual Performance", "Grade Distribution", "Class Statistics"])

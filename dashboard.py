@@ -21,22 +21,30 @@ class Dashboard:
 
         # Helper functions for database queries
         def get_total_classes(cursor):
-            cursor.execute("SELECT COUNT(*) AS total_classes FROM classes")
+            cursor.execute("SELECT COUNT(*) AS total_classes FROM classes where user_id = %s", (st.session_state.user_id,))
             result = cursor.fetchone()
             return result['total_classes'] if result else 0
 
         def get_total_students(cursor):
-            cursor.execute("SELECT COUNT(*) AS total_students FROM students")
+            cursor.execute("""
+                           SELECT COUNT(s.id) AS total_students 
+                           FROM students s 
+                           JOIN classes c ON s.class_id = c.id 
+                           WHERE c.user_id = %s""", 
+                           (st.session_state.user_id,))
             result = cursor.fetchone()
             return result['total_students'] if result else 0
 
         def get_highest_students_in_class(cursor):
-            cursor.execute(""" 
-                SELECT class_id, COUNT(*) AS student_count
-                FROM students
-                GROUP BY class_id
-                ORDER BY student_count DESC LIMIT 1
-            """)
+            cursor.execute("""
+                            SELECT s.class_id, COUNT(*) AS student_count
+                            FROM students s
+                            JOIN classes c ON s.class_id = c.id
+                            WHERE c.user_id = %s
+                            GROUP BY s.class_id
+                            ORDER BY student_count DESC LIMIT 1
+                        """, (st.session_state.user_id,))
+
             result = cursor.fetchone()
             return result['student_count'] if result else 0
 
@@ -83,12 +91,14 @@ class Dashboard:
     def create_class_distribution_chart(self, cursor):
         """Create a modern bar chart showing student distribution across classes"""
         cursor.execute("""
-            SELECT c.class_name, COUNT(s.id) AS student_count
-            FROM classes c
-            LEFT JOIN students s ON c.id = s.class_id
-            GROUP BY c.class_name, c.id
-            ORDER BY student_count DESC
-        """)
+                        SELECT c.class_name, COUNT(s.id) AS student_count
+                        FROM classes c
+                        LEFT JOIN students s ON c.id = s.class_id
+                        WHERE c.user_id = %s
+                        GROUP BY c.class_name, c.id
+                        ORDER BY student_count DESC
+                    """, (st.session_state.user_id,))
+
         classes = cursor.fetchall()
         
         if classes:
@@ -119,17 +129,18 @@ class Dashboard:
     def create_performance_overview_chart(self, cursor):
         """Create a chart showing overall performance metrics"""
         cursor.execute("""
-            SELECT c.class_name, 
-                   AVG(r.marks::float / r.total_marks * 100) as avg_percentage,
-                   COUNT(r.id) as total_results
-            FROM classes c
-            LEFT JOIN students s ON c.id = s.class_id
-            LEFT JOIN results r ON s.id = r.student_id
-            WHERE r.id IS NOT NULL
-            GROUP BY c.class_name, c.id
-            HAVING COUNT(r.id) > 0
-            ORDER BY avg_percentage DESC
-        """)
+                        SELECT c.class_name, 
+                            AVG(r.marks::float / r.total_marks * 100) as avg_percentage,
+                            COUNT(r.id) as total_results
+                        FROM classes c
+                        LEFT JOIN students s ON c.id = s.class_id
+                        LEFT JOIN results r ON s.id = r.student_id
+                        WHERE c.user_id = %s AND r.id IS NOT NULL
+                        GROUP BY c.class_name, c.id
+                        HAVING COUNT(r.id) > 0
+                        ORDER BY avg_percentage DESC
+                    """, (st.session_state.user_id,))
+
         performance_data = cursor.fetchall()
         
         if performance_data:
@@ -174,13 +185,15 @@ class Dashboard:
     def create_enrollment_trends_chart(self, cursor):
         """Create a pie chart showing enrollment distribution"""
         cursor.execute("""
-            SELECT c.class_name, c.semester, COUNT(s.id) AS student_count
-            FROM classes c
-            LEFT JOIN students s ON c.id = s.class_id
-            GROUP BY c.class_name, c.semester, c.id
-            HAVING COUNT(s.id) > 0
-            ORDER BY student_count DESC
-        """)
+                        SELECT c.class_name, c.semester, COUNT(s.id) AS student_count
+                        FROM classes c
+                        LEFT JOIN students s ON c.id = s.class_id
+                        WHERE c.user_id = %s
+                        GROUP BY c.class_name, c.semester, c.id
+                        HAVING COUNT(s.id) > 0
+                        ORDER BY student_count DESC
+                    """, (st.session_state.user_id,))
+
         enrollment_data = cursor.fetchall()
         
         if enrollment_data:

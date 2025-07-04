@@ -23,14 +23,14 @@ def load_custom_css():
             color: var(--text-color);
         }
 
-        .auth-container {
-            max-width: 400px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
+        # .auth-container {
+        #     max-width: 400px;
+        #     margin: 2rem auto;
+        #     padding: 2rem;
+        #     background: white;
+        #     border-radius: 15px;
+        #     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        # }
 
         .auth-emoji {
             font-size: 3rem;
@@ -97,8 +97,7 @@ class Login:
         st.markdown('</div>', unsafe_allow_html=True)
 
     def _display_login_tab(self):
-        st.markdown('<div class="auth-emoji">👋</div>', unsafe_allow_html=True)
-        st.markdown("<h3 style='text-align: center; margin-bottom: 2rem;'>Welcome Back!</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center; margin-bottom: 2rem;'>Login</h3>", unsafe_allow_html=True)
 
         with st.form(key="login_form"):
             col1, col2 = st.columns([0.15, 0.85])
@@ -120,10 +119,13 @@ class Login:
                 if not self.identifier or not self.password:
                     st.warning("Please fill in all fields")
                 elif self.authenticate():
-                    st.session_state["is_logged_in"] = True
-                    st.session_state["identifier"] = self.identifier
-                    st.session_state["show_login_form"] = False
+                    st.session_state.is_logged_in = True
+                    st.session_state.identifier = self.identifier
+                    st.session_state.current_tab = "Home Dashboard"  # or your default dashboard tab
+                    st.session_state.show_login_form = False
+                    st.success("Login successful! Redirecting...")
                     st.rerun()
+
                 else:
                     st.warning("Invalid credentials")
 
@@ -131,12 +133,21 @@ class Login:
         connection = Connect_DB.get_connection()
         if connection:
             try:
-                cursor = connection.cursor()
-                query = "SELECT password FROM users WHERE email = %s OR username = %s"
+                cursor = connection.cursor(cursor_factory=RealDictCursor)
+                query = "SELECT id, password FROM users WHERE email = %s OR username = %s"
                 cursor.execute(query, (self.identifier, self.identifier))
                 result = cursor.fetchone()
 
                 if result and result['password'] == hash_password(self.password):
+                    # Clear all previous session state data
+                    for key in list(st.session_state.keys()):
+                        del st.session_state[key]
+
+                    # Set new session state for this user
+                    st.session_state["is_logged_in"] = True
+                    st.session_state["identifier"] = self.identifier
+                    st.session_state.user_id = result['id']  # Save user_id
+                    st.session_state["show_login_form"] = False
                     return True
                 return False
             except psycopg2.Error as e:
@@ -147,6 +158,7 @@ class Login:
                 connection.close()
         return False
 
+
 class Signup:
     def __init__(self):
         self.email = ""
@@ -155,7 +167,6 @@ class Signup:
         self.confirm_password = ""
 
     def display_signup_form_in_tab(self):
-        st.markdown('<div class="auth-emoji">✨</div>', unsafe_allow_html=True)
         st.markdown("<h3 style='text-align: center; margin-bottom: 2rem;'>Create Account</h3>", unsafe_allow_html=True)
 
         with st.form(key="signup_form"):
@@ -186,8 +197,6 @@ class Signup:
                 if self.validate():
                     if self.register_user():
                         st.success("Account created successfully!")
-                        st.session_state.current_tab = "login"  # Switch to login tab
-                        st.session_state.show_login_form = True
                         time.sleep(1)  # Give time for success message to show
                         st.rerun()
                     else:
@@ -211,7 +220,7 @@ class Signup:
                 st.warning("Database connection error")
                 return False
 
-            cursor = connection.cursor()
+            cursor = connection.cursor(cursor_factory=RealDictCursor)
 
             # Check if email or username exists
             check_query = "SELECT * FROM users WHERE email = %s OR username = %s"
@@ -219,10 +228,21 @@ class Signup:
             if cursor.fetchone():
                 return False
 
-            # Insert new user
-            query = "INSERT INTO users (email, username, password) VALUES (%s, %s, %s)"
+            # Insert new user and fetch the id
+            query = """
+                INSERT INTO users (email, username, password)
+                VALUES (%s, %s, %s)
+                RETURNING id
+            """
             cursor.execute(query, (self.email, self.username, hash_password(self.password)))
+            new_user = cursor.fetchone()
             connection.commit()
+
+            # Set session state for the new user
+            st.session_state.is_logged_in = True
+            st.session_state.identifier = self.email
+            st.session_state.user_id = new_user['id']  # Set user_id
+
             return True
 
         except psycopg2.Error as e:
