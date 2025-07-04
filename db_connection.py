@@ -10,7 +10,7 @@ class Connect_DB:
         Creates and returns a PostgreSQL database connection using environment variables
         """
         try:
-            database_url = os.getenv("DATABASE_URL")
+            database_url = st.secrets.get("DATABASE_URL")
             if not database_url:
                 st.error("DATABASE_URL is not set. Please add it to your environment or Streamlit secrets.")
                 return None
