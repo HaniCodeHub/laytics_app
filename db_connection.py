@@ -15,7 +15,8 @@ class Connect_DB:
 
             connection = psycopg2.connect(
                 database_url,
-                cursor_factory=RealDictCursor
+                cursor_factory=RealDictCursor,
+                sslmode="require"
             )
             return connection
 
