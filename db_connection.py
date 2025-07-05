@@ -12,20 +12,24 @@ class Connect_DB:
         """
         try:
             database_url = st.secrets["secrets"]["DATABASE_URL"]
-            st.write(f"DEBUG: DATABASE_URL = {database_url}")
-            
+            st.write(f"DEBUG: DATABASE_URL fetched successfully")
+            st.write(f"🔗 Connecting to: {database_url}")
+
             connection = psycopg2.connect(
                 database_url,
                 cursor_factory=RealDictCursor,
                 sslmode="require"
             )
+            st.success("Connected to Neon database!")
             return connection
 
         except KeyError:
             st.error("DATABASE_URL is not set in Streamlit secrets. Go to Settings → Secrets and add it.")
             return None
+        except psycopg2.OperationalError as e:
+            st.error(f"OperationalError: {e}")
         except psycopg2.Error as e:
-            st.error(f"Database connection error: {e}")
+            st.error(f"psycopg Error: {e}")
             return None
 
 
