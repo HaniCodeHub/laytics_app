@@ -39,6 +39,10 @@ class ClassManagerApp:
 
             /* Navigation styling */
             .top-nav {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
                 backdrop-filter: blur(10px);
                 background: rgba(13, 17, 23, 0.9) !important;
                 box-shadow: 0 2px 10px rgba(0,0,0,0.3);
@@ -54,25 +58,33 @@ class ClassManagerApp:
                 text-decoration: none;
                 transition: transform 0.3s ease;
                 cursor: pointer;
+                font-size: 2.2rem; /* Default desktop size */
             }
-                    
-            @media screen and (max-width: 768px) {
-                .top-nav {
-                    flex-direction: column !important;
-                    text-align: center !important;
-                }
-
-                .logo {
-                    font-size: 1.8rem !important;
-                    margin-bottom: 1rem !important;
-                }
-            }
-
 
             .logo:hover {
                 transform: scale(1.05);
                 color: #79c0ff !important;
             }
+
+            /* Responsive adjustments for mobile */
+            @media screen and (max-width: 768px) {
+                .top-nav {
+                    flex-direction: column;
+                    text-align: center;
+                    padding: 1rem;
+                }
+
+                .logo {
+                    font-size: 1.6rem !important; /* Smaller on mobile */
+                    margin-bottom: 0.5rem;
+                }
+
+                .nav-link {
+                    display: block;
+                    margin: 0.3rem 0;
+                }
+            }
+
 
             .nav-link {
                 text-decoration: none !important;
