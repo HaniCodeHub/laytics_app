@@ -4,6 +4,12 @@ from home_page import ClassManagerApp
 from login_system import initialize_database
 from class_manager import ClassManager
 
+# DEBUG: Test if secrets are accessible
+st.title("Secrets Debugging Test ")
+st.write("Secrets object:", st.secrets)
+st.write("DATABASE_URL:", st.secrets.get("DATABASE_URL", "NOT SET"))
+
+
 # Set page configuration at the very beginning
 st.set_page_config(
     page_title="Educational Analytics",
