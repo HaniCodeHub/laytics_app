@@ -12,15 +12,12 @@ class Connect_DB:
         """
         try:
             database_url = st.secrets["secrets"]["DATABASE_URL"]
-            st.write(f"DEBUG: DATABASE_URL fetched successfully")
-            st.write(f"🔗 Connecting to: {database_url}")
-
+            
             connection = psycopg2.connect(
                 database_url,
                 cursor_factory=RealDictCursor,
                 sslmode="require"
             )
-            st.success("Connected to Neon database!")
             return connection
 
         except KeyError:
