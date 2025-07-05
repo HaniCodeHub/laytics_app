@@ -2,3 +2,9 @@
 headless = true
 enableCORS = false
 
+[supabase]
+host = "aws-0-ap-southeast-1.pooler.supabase.com"
+database = "lytics_db"
+user = "postgres.hvwsxjahvajzebiyxvnw"
+password = "supabase@786"
+port = 5432
