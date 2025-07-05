@@ -11,8 +11,9 @@ class Connect_DB:
         Creates and returns a PostgreSQL database connection using Streamlit secrets
         """
         try:
-            database_url = st.secrets["DATABASE_URL"]
-
+            database_url = st.secrets["secrets"]["DATABASE_URL"]
+            st.write(f"DEBUG: DATABASE_URL = {database_url}")
+            
             connection = psycopg2.connect(
                 database_url,
                 cursor_factory=RealDictCursor,
