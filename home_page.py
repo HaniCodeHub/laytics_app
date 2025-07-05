@@ -76,15 +76,7 @@ class ClassManagerApp:
                 color: #58a6ff !important;
             }
 
-            /* Use default Streamlit button styling - minimal overrides */
-            .stButton > button[kind="primary"] {
-                /* Let Streamlit handle primary button styling */
-            }
-
-            .stButton > button[kind="secondary"] {
-                /* Let Streamlit handle secondary button styling */
-            }
-
+            
             .section {
                 scroll-margin-top: 80px;
                 padding: 40px 0;
@@ -237,7 +229,7 @@ class ClassManagerApp:
             )
 
         with col3:
-            if st.button("Login", key="nav_login", use_container_width=True):
+            if st.button("Login", key="nav_login", use_container_width=True, type="secondary"):
                 st.session_state.show_login_form = True
                 st.session_state.show_signup = False
                 st.rerun()
@@ -325,7 +317,7 @@ class ClassManagerApp:
         })
         fig = px.line(data, x="Students", y="Average Score",
                      title="Class Performance Trend",
-                     template="plotly_white",
+                     template="plotly_dark",
                      markers=True)
         fig.update_traces(line=dict(width=3),
                          marker=dict(size=8))
@@ -338,6 +330,7 @@ class ClassManagerApp:
         })
         fig = px.pie(data, values="Count", names="Grade",
                     title="Grade Distribution",
+                    template="plotly_dark",
                     hole=0.4,
                     color_discrete_sequence=px.colors.qualitative.Pastel)
         st.plotly_chart(fig, use_container_width=True)
@@ -349,6 +342,7 @@ class ClassManagerApp:
         })
         fig = px.bar(data, x="Student", y="Progress",
                     title="Individual Student Progress",
+                    template="plotly_dark",
                     color="Progress",
                     color_continuous_scale="Viridis",
                     hover_data={"Progress": ":.1f"})
@@ -366,7 +360,7 @@ class ClassManagerApp:
             st.markdown(f"<h2 style='text-align: center;'>Welcome, {st.session_state.get('identifier', 'User')}! </h2>", unsafe_allow_html=True)
             st.write("You have successfully logged in. ")
 
-            if st.button("Logout"):
+            if st.button("Logout", type="primary"):
                 for key in ['is_logged_in', 'show_login_form', 'identifier', 'current_tab']:
                     if key in st.session_state:
                         del st.session_state[key]
