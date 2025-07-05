@@ -55,6 +55,19 @@ class ClassManagerApp:
                 transition: transform 0.3s ease;
                 cursor: pointer;
             }
+                    
+            @media screen and (max-width: 768px) {
+                .top-nav {
+                    flex-direction: column !important;
+                    text-align: center !important;
+                }
+
+                .logo {
+                    font-size: 1.8rem !important;
+                    margin-bottom: 1rem !important;
+                }
+            }
+
 
             .logo:hover {
                 transform: scale(1.05);
