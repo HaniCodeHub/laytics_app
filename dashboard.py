@@ -116,7 +116,7 @@ class Dashboard:
             )
             
             fig.update_layout(
-                template="plotly_white",
+                template="plotly_dark",
                 title_x=0.5,
                 xaxis_tickangle=-45,
                 height=400
@@ -162,7 +162,7 @@ class Dashboard:
             )
             
             fig.update_layout(
-                template="plotly_white",
+                template="plotly_dark",
                 title_x=0.5,
                 xaxis_tickangle=-45,
                 height=400
@@ -210,7 +210,7 @@ class Dashboard:
             )
             
             fig.update_layout(
-                template="plotly_white",
+                template="plotly_dark",
                 title_x=0.5,
                 height=400
             )
